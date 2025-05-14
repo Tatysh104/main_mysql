@@ -1,57 +1,69 @@
+// server.js
 const express = require('express');
+const db = require('./db'); // Импортируем соединение с базой данных
+
 const app = express();
-const bodyParser = require('body-parser');
-const db = require('./db'); // Импортируйте ваше соединение с БД
+const PORT = 3000;
 
-app.use(bodyParser.json());
+// Простой маршрут для проверки работы сервера
+app.get('/', (req, res) => {
+    res.send('Hello World!');
+});
 
-// Путь для получения всех элементов
-app.get('/getAllItems', (req, res) => {
-    db.query('SELECT * FROM Items', (err, results) => {
-        if (err) return res.status(500).json({ error: err });
+// Пример маршрута для получения данных из базы данных
+app.get('/data', (req, res) => {
+    db.query('SELECT * FROM your_table_name', (err, results) => { // Замените your_table_name на имя вашей таблицы
+        if (err) {
+            return res.status(500).send(err);
+        }
         res.json(results);
     });
 });
 
-// Путь для добавления элемента
-app.post('/addItem', (req, res) => {
-    const { name, desc } = req.query;
-    if (!name || !desc) return res.json(null);
+// Запуск сервера
+app.listen(PORT, () => {
+    console.log(`Сервер запущен на http://localhost:${PORT}`);
+});
 
-    db.query('INSERT INTO Items (name, desc) VALUES (?, ?)', [name, desc], (err, results) => {
+// Путь для получения случайного элемента
+app.get('/randomItem', (req, res) => {
+    db.query('SELECT * FROM Items ORDER BY RAND() LIMIT 1', (err, results) => {
         if (err) return res.status(500).json({ error: err });
-
-        const newItem = { id: results.insertId, name, desc };
-        res.json(newItem);
+        if (results.length === 0) return res.json({});
+        const item = results[0];
+        res.send(`(${item.id}) - ${item.name}: ${item.desc}`);
     });
 });
 
-// Путь для удаления элемента
+// Путь для удаления элемента с сообщением
 app.post('/deleteItem', (req, res) => {
     const { id } = req.query;
     if (!id) return res.json(null);
 
     db.query('DELETE FROM Items WHERE id = ?', [id], (err, results) => {
         if (err) return res.status(500).json({ error: err });
-        res.json({});
+
+        if (results.affectedRows === 0) {
+            res.send("Ошибка: предмет с таким ID не найден");
+        } else {
+            res.send("Удачно: предмет удалён");
+        }
     });
 });
 
-// Путь для обновления элемента
-app.post('/updateItem', (req, res) => {
-    const { id, name, desc } = req.query;
-    if (!id || !name || !desc) return res.json(null);
+// Путь для получения элемента по ID
+app.get('/getItemByID', (req, res) => {
+    const { id } = req.query;
+    if (!id) return res.json(null);
 
-    db.query('UPDATE Items SET name = ?, desc = ? WHERE id = ?', [name, desc, id], (err, results) => {
+    db.query('SELECT * FROM Items WHERE id = ?', [id], (err, results) => {
         if (err) return res.status(500).json({ error: err });
 
-        if (results.affectedRows === 0) return res.json({});
-        
-        const updatedItem = { id, name, desc };
-        res.json(updatedItem);
+        if (results.length === 0) {
+            res.send("{}");
+        } else {
+            const item = results[0];
+            res.send(`(${item.id}) - ${item.name}: ${item.desc}`);
+        }
     });
-});
-
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
 });

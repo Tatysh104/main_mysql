@@ -1,5 +1,26 @@
 {
   "dependencies": {
+    "express": "^5.1.0",
     "mysql2": "^3.14.1"
-  }
+  },
+  "name": "mysql",
+  "version": "1.0.0",
+  "description": "",
+  "main": "gb.js.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tatysh104/main_mysql.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Tatysh104/main_mysql/issues"
+  },
+  "homepage": "https://github.com/Tatysh104/main_mysql#readme"
 }
